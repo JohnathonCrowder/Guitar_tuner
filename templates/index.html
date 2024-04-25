@@ -19,6 +19,10 @@
             <option value="{{ guitar_string.frequency }}">{{ guitar_string.name }} - {{ guitar_string.frequency }} Hz</option>
         {% endfor %}
     </select>
+    <div>
+        <input type="checkbox" id="auto-mode-checkbox">
+        <label for="auto-mode-checkbox">Automatic Mode</label>
+    </div>
     <button id="start-button">Start</button>
     <button id="stop-button">Stop</button>
 </body>

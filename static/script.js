@@ -1,93 +1,52 @@
 $(document).ready(function() {
     var targetPitch = 0;
     var estimatedPitch = 0;
+    var isEstimating = false;
     var intervalId;
+    var autoMode = false;
 
-    $('#string-dropdown').change(function() {
-        targetPitch = parseFloat($(this).val());
+    function updatePitchLabels() {
         $('#target-pitch-label').text('Target Pitch: ' + targetPitch.toFixed(2) + ' Hz');
-    });
-
-    $('#start-button').click(function() {
-        $(this).prop('disabled', true);
-        $('#stop-button').prop('disabled', false);
-        startPitchEstimation();
-    });
-
-    $('#stop-button').click(function() {
-        $(this).prop('disabled', true);
-        $('#start-button').prop('disabled', false);
-        stopPitchEstimation();
-    });
-
-    $('#auto-mode-checkbox').change(function() {
-        if ($(this).is(':checked')) {
-            $('#string-dropdown').hide();
-            $('#custom-pitch-checkbox').prop('disabled', true);
-            $('#custom-pitch-input').hide();
-            $('#set-custom-pitch-button').hide();
-        } else {
-            $('#string-dropdown').show();
-            $('#custom-pitch-checkbox').prop('disabled', false);
-            if ($('#custom-pitch-checkbox').is(':checked')) {
-                $('#custom-pitch-input').show();
-                $('#set-custom-pitch-button').show();
-            }
-        }
-    });
-
-    $('#custom-pitch-checkbox').change(function() {
-        if ($(this).is(':checked')) {
-            $('#custom-pitch-input').show();
-            $('#set-custom-pitch-button').show();
-        } else {
-            $('#custom-pitch-input').hide();
-            $('#set-custom-pitch-button').hide();
-        }
-    });
-
-    $('#set-custom-pitch-button').click(function() {
-        var customPitch = parseFloat($('#custom-pitch-input').val());
-        if (!isNaN(customPitch)) {
-            targetPitch = customPitch;
-            $('#target-pitch-label').text('Target Pitch: ' + targetPitch.toFixed(2) + ' Hz');
-        }
-    });
-
-    function startPitchEstimation() {
-        intervalId = setInterval(function() {
-            $.getJSON('/estimate_pitch', function(data) {
-                estimatedPitch = data.estimated_pitch;
-                var decibels = data.decibels;
-
-                if (estimatedPitch === 0) {
-                    $('#estimated-pitch-label').text('Estimated Pitch: -');
-                    $('#pitch-indicator').css('background-color', 'gray');
-                } else {
-                    $('#estimated-pitch-label').text('Estimated Pitch: ' + estimatedPitch.toFixed(2) + ' Hz');
-                    var pitchDifference = estimatedPitch - targetPitch;
-
-                    if (Math.abs(pitchDifference) <= 10) {
-                        $('#pitch-indicator').css('background-color', 'green');
-                    } else {
-                        $('#pitch-indicator').css('background-color', 'red');
-                    }
-
-                    var sliderPosition = (estimatedPitch - targetPitch + 500) / 1000 * 100;
-                    $('#pitch-indicator').css('left', sliderPosition + '%');
-                }
-
-                $('#decibel-rating').text('Decibel Rating: ' + decibels.toFixed(2) + ' dB');
-
-                if ($('#auto-mode-checkbox').is(':checked')) {
-                    findClosestString(estimatedPitch);
-                }
-            });
-        }, 100);
+        $('#estimated-pitch-label').text('Estimated Pitch: ' + estimatedPitch.toFixed(2) + ' Hz');
     }
 
-    function stopPitchEstimation() {
-        clearInterval(intervalId);
+    function updatePitchSlider() {
+        var sliderWidth = $('#pitch-slider').width();
+        var targetX = sliderWidth / 2;
+        var estimatedX = (estimatedPitch - targetPitch + 500) / 1000 * sliderWidth;
+
+        $('#pitch-slider').empty();
+
+        if (isEstimating) {
+            if (estimatedX < targetX) {
+                $('<div>').css({
+                    position: 'absolute',
+                    left: estimatedX + 'px',
+                    top: 0,
+                    width: targetX - estimatedX + 'px',
+                    height: '100%',
+                    backgroundColor: 'orange'
+                }).appendTo('#pitch-slider');
+            } else {
+                $('<div>').css({
+                    position: 'absolute',
+                    left: targetX + 'px',
+                    top: 0,
+                    width: estimatedX - targetX + 'px',
+                    height: '100%',
+                    backgroundColor: 'orange'
+                }).appendTo('#pitch-slider');
+            }
+        }
+
+        $('<div>').css({
+            position: 'absolute',
+            left: targetX + 'px',
+            top: 0,
+            width: '2px',
+            height: '100%',
+            backgroundColor: 'black'
+        }).appendTo('#pitch-slider');
     }
 
     function findClosestString(estimatedPitch) {
@@ -103,10 +62,61 @@ $(document).ready(function() {
             }
         });
 
-        if (closestString) {
-            $('#string-dropdown').val(closestString.val());
-            targetPitch = parseFloat(closestString.val());
-            $('#target-pitch-label').text('Target Pitch: ' + targetPitch.toFixed(2) + ' Hz');
+        return closestString;
+    }
+
+    function updateAutoMode() {
+        if (autoMode) {
+            $('#string-dropdown').prop('disabled', true);
+        } else {
+            $('#string-dropdown').prop('disabled', false);
         }
     }
+
+    $('#auto-mode-checkbox').change(function() {
+        autoMode = $(this).is(':checked');
+        updateAutoMode();
+    });
+
+    function startEstimation() {
+        isEstimating = true;
+        intervalId = setInterval(function() {
+            $.getJSON('/estimate_pitch', function(data) {
+                estimatedPitch = data.estimated_pitch;
+                var decibels = data.decibels;
+                $('#decibel-rating').text('Decibel Rating: ' + decibels.toFixed(2) + ' dB');
+                updatePitchLabels();
+                updatePitchSlider();
+
+                if (autoMode) {
+                    var closestString = findClosestString(estimatedPitch);
+                    if (closestString) {
+                        $('#string-dropdown').val(closestString.val());
+                        targetPitch = parseFloat(closestString.val());
+                        updatePitchLabels();
+                        updatePitchSlider();
+                    }
+                }
+            });
+        }, 100);
+    }
+
+    function stopEstimation() {
+        isEstimating = false;
+        clearInterval(intervalId);
+    }
+
+    $('#string-dropdown').change(function() {
+        targetPitch = parseFloat($(this).val());
+        updatePitchLabels();
+        updatePitchSlider();
+    });
+
+    $('#start-button').click(function() {
+        startEstimation();
+    });
+
+    $('#stop-button').click(function() {
+        stopEstimation();
+    });
 });
