@@ -5,18 +5,21 @@ $(document).ready(function() {
     var intervalId;
     var autoMode = false;
 
+    var $pitchSliderRectangle = $('<div>').attr('id', 'pitch-slider-rectangle').appendTo('#pitch-slider');
+
     function updatePitchLabels() {
         $('#target-pitch-label').text('Target Pitch: ' + targetPitch.toFixed(2) + ' Hz');
         $('#estimated-pitch-label').text('Estimated Pitch: ' + estimatedPitch.toFixed(2) + ' Hz');
+        updatePitchSliderRectangle();
     }
 
     function updatePitchSlider() {
         var sliderWidth = $('#pitch-slider').width();
         var targetX = sliderWidth / 2;
         var estimatedX = (estimatedPitch - targetPitch + 500) / 1000 * sliderWidth;
-
-        $('#pitch-slider').empty();
-
+    
+        $('#pitch-slider').children().not('#pitch-slider-rectangle').remove();
+    
         if (isEstimating) {
             if (estimatedX < targetX) {
                 $('<div>').css({
@@ -38,7 +41,7 @@ $(document).ready(function() {
                 }).appendTo('#pitch-slider');
             }
         }
-
+    
         $('<div>').css({
             position: 'absolute',
             left: targetX + 'px',
@@ -47,6 +50,17 @@ $(document).ready(function() {
             height: '100%',
             backgroundColor: 'black'
         }).appendTo('#pitch-slider');
+    
+        updatePitchSliderRectangle();
+    }
+
+    function updatePitchSliderRectangle() {
+        var pitchDifference = Math.abs(estimatedPitch - targetPitch);
+        if (pitchDifference <= 3) {
+            $pitchSliderRectangle.css('background-color', 'green');
+        } else {
+            $pitchSliderRectangle.css('background-color', 'red');
+        }
     }
 
     function findClosestString(estimatedPitch) {
