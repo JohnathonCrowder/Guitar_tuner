@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+#pitch-labels {
+    margin-bottom: 20px;
+}
+
+#pitch-slider {
+    width: 80%;
+    height: 20px;
+    background-color: #ddd;
+    margin: 0 auto;
+    position: relative;
+}
+
+#pitch-indicator {
+    width: 40px;
+    height: 40px;
+    background-color: red;
+    border-radius: 50%;
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#decibel-rating {
+    margin-top: 20px;
+}
+
+button {
+    margin-top: 10px;
+}

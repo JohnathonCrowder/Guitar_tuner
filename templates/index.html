@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Guitar Tuner</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <h1>Guitar Tuner</h1>
+    <div id="pitch-labels">
+        <span id="target-pitch-label">Target Pitch: -</span>
+        <span id="estimated-pitch-label">Estimated Pitch: -</span>
+    </div>
+    <div id="pitch-slider"></div>
+    <div id="decibel-rating">Decibel Rating: -</div>
+    <select id="string-dropdown">
+        {% for guitar_string in guitar_strings %}
+            <option value="{{ guitar_string.frequency }}">{{ guitar_string.name }} - {{ guitar_string.frequency }} Hz</option>
+        {% endfor %}
+    </select>
+    <button id="start-button">Start</button>
+    <button id="stop-button">Stop</button>
+</body>
+</html>
