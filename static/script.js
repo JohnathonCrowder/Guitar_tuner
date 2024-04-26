@@ -94,8 +94,9 @@ $(document).ready(function() {
 
     function startEstimation() {
         isEstimating = true;
-        intervalId = setInterval(function() {
-            $.getJSON('/estimate_pitch', function(data) {
+        $.getJSON('/start_estimation', function(data) {
+            intervalId = setInterval(function() {
+                $.getJSON('/estimate_pitch', function(data) {
                 estimatedPitch = data.estimated_pitch;
                 var decibels = data.decibels;
                 $('#decibel-rating').text('Decibel Rating: ' + decibels.toFixed(2) + ' dB');
@@ -113,11 +114,13 @@ $(document).ready(function() {
                 }
             });
         }, 100);
-    }
+            });
+        }
 
     function stopEstimation() {
         isEstimating = false;
         clearInterval(intervalId);
+        $.getJSON('/stop_estimation');
     }
 
     $('#string-dropdown').change(function() {
