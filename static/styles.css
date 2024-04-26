@@ -1,6 +1,13 @@
 body {
     font-family: Arial, sans-serif;
     text-align: center;
+    background-color: #e6f2ff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
 }
 
 #pitch-labels {
@@ -9,10 +16,11 @@ body {
 
 #pitch-slider {
     width: 80%;
-    height: 20px;
+    height: 40px;
     background-color: #ddd;
     margin: 0 auto;
     position: relative;
+    border-radius: 10px;
 }
 
 #decibel-rating {
@@ -25,11 +33,12 @@ select, button {
 
 #pitch-slider-rectangle {
     position: absolute;
-    top: 0;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 100%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 130%;
     background-color: red;
     z-index: 1;
+    border-radius: 10px;
 }
