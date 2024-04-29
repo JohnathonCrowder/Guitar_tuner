@@ -121,6 +121,10 @@ $(document).ready(function() {
         isEstimating = false;
         clearInterval(intervalId);
         $.getJSON('/stop_estimation');
+        
+        // Clear the Decibel and Estimated Pitch labels
+        $('#decibel-rating').text('Decibel Rating: -');
+        $('#estimated-pitch-label').text('Estimated Pitch: -');
     }
 
     $('#string-dropdown').change(function() {
@@ -136,4 +140,7 @@ $(document).ready(function() {
     $('#stop-button').click(function() {
         stopEstimation();
     });
+
+    // Set the target Hz to the first string option on page load
+    $('#string-dropdown').trigger('change');
 });
