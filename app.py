@@ -29,14 +29,24 @@ guitar_strings = [
     GuitarString('E', 329.63)
 ]
 
+# Add the Banjo strings
+banjo_strings = [
+    GuitarString('D', 294),
+    GuitarString('B', 248),
+    GuitarString('G', 196),
+    GuitarString('D#', 147),
+    GuitarString('G#', 393)
+]
+
 # Create a PyAudio object
 p = pyaudio.PyAudio()
 stream = None
 
 @app.route('/')
 def index():
-    # Render the index.html template and pass the guitar strings data
-    return render_template('index.html', guitar_strings=guitar_strings)
+    instrument = request.args.get('instrument', 'guitar')
+    strings = guitar_strings if instrument == 'guitar' else banjo_strings
+    return render_template('index.html', instrument=instrument, strings=strings)
 
 def pitch_estimation_thread():
     global stream, estimated_pitch_value, decibels_value

@@ -14,9 +14,14 @@
     </div>
     <div id="pitch-slider"></div>
     <div id="decibel-rating">Decibel Rating: -</div>
+    <select id="instrument-dropdown">
+        <option value="guitar" {% if instrument == 'guitar' %}selected{% endif %}>Guitar</option>
+        <option value="banjo" {% if instrument == 'banjo' %}selected{% endif %}>Banjo</option>
+        
+    </select>
     <select id="string-dropdown">
-        {% for guitar_string in guitar_strings %}
-            <option value="{{ guitar_string.frequency }}">{{ guitar_string.name }} - {{ guitar_string.frequency }} Hz</option>
+        {% for string in strings %}
+            <option value="{{ string.frequency }}">{{ string.name }} - {{ string.frequency }} Hz</option>
         {% endfor %}
     </select>
     <div>

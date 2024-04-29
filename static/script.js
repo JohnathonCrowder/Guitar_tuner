@@ -143,4 +143,9 @@ $(document).ready(function() {
 
     // Set the target Hz to the first string option on page load
     $('#string-dropdown').trigger('change');
+
+    $('#instrument-dropdown').change(function() {
+        var instrument = $(this).val();
+        window.location.href = '/?instrument=' + instrument;
+    });
 });
