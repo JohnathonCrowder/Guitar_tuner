@@ -42,3 +42,24 @@ select, button {
     z-index: 1;
     border-radius: 10px;
 }
+
+select {
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    transition: background-color 0.3s ease;
+    color: #333;
+  }
+
+  select:hover {
+    border-color: #999;
+    background-color: hsl(0, 0%, 89%);
+  }
+
+  select:focus {
+    outline: none;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  }
