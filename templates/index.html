@@ -7,7 +7,19 @@
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
-    <h1>Guitar Tuner</h1>
+    <header>
+        <h1>Guitar Tuner</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="banner">
+        <img src="{{ url_for('static', filename='images/robot.png') }}" alt="Page Banner">
+    </div>
     <div id="pitch-labels">
         <span id="target-pitch-label">Target Pitch: -</span>
         <span id="estimated-pitch-label">Estimated Pitch: -</span>
@@ -17,7 +29,6 @@
     <select id="instrument-dropdown">
         <option value="guitar" {% if instrument == 'guitar' %}selected{% endif %}>Guitar</option>
         <option value="banjo" {% if instrument == 'banjo' %}selected{% endif %}>Banjo</option>
-        
     </select>
     <select id="string-dropdown">
         {% for string in strings %}

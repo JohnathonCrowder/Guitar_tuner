@@ -8,6 +8,43 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
+    margin-top: 30px;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+}
+
+header h1 {
+    margin: 0;
+    margin-bottom: 10px;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    margin: 0 20px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
 }
 
 #pitch-labels {
@@ -52,14 +89,27 @@ select {
     background-color: #fff;
     transition: background-color 0.3s ease;
     color: #333;
-  }
+}
 
-  select:hover {
+select:hover {
     border-color: #999;
     background-color: hsl(0, 0%, 89%);
-  }
+}
 
-  select:focus {
+select:focus {
     outline: none;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-  }
+}
+
+.banner {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 100px;
+    margin-bottom: 20px;
+}
+
+.banner img {
+    max-width: 100%;
+    height: auto;
+}
