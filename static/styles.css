@@ -113,3 +113,39 @@ select:focus {
     max-width: 100%;
     height: auto;
 }
+
+.about-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: left;
+}
+
+.about-content h2 {
+    margin-top: 100px;
+    margin-bottom: 20px;
+}
+
+.about-content p {
+    margin-bottom: 20px;
+}
+
+.contact-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: left;
+}
+
+.contact-content h2 {
+    margin-top: 0;
+}
+
+.contact-content ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.contact-content ul li {
+    margin-bottom: 10px;
+}
