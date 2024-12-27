@@ -1,45 +1,165 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Guitar Tuner</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</head>
-<body>
-    <header>
-        <h1>Guitar Tuner</h1>
-        <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/about">About</a></li>
-                <li><a href="/contact">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
-    <div class="banner">
-        <img src="{{ url_for('static', filename='images/robot.png') }}" alt="Page Banner">
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero bg-gray-100 py-16 text-center">
+    <h2 class="text-4xl font-bold mb-4">Precise Tuning Made Easy</h2>
+    <p class="text-xl">Tune your instrument with advanced pitch detection technology.</p>
+</section>
+<section class="tuner mt-12">
+    <div class="tuner-display bg-white shadow-md rounded-lg p-6 mb-8">
+        <canvas id="tuner-canvas" class="mb-4"></canvas>
+        <div id="pitch-labels" class="flex justify-between">
+            <span id="target-pitch-label" class="text-gray-600">Target Pitch: -</span>
+            <span id="estimated-pitch-label" class="text-gray-600">Estimated Pitch: -</span>
+        </div>
+        <div id="decibel-rating" class="text-gray-600">Decibel Rating: -</div>
     </div>
-    <div id="pitch-labels">
-        <span id="target-pitch-label">Target Pitch: -</span>
-        <span id="estimated-pitch-label">Estimated Pitch: -</span>
+    <div class="tuner-controls bg-white shadow-md rounded-lg p-6">
+        <div class="control-group mb-4">
+            <label for="instrument-dropdown" class="block mb-2">Select Instrument:</label>
+            <select id="instrument-dropdown" class="w-full border border-gray-300 rounded-md py-2 px-3">
+                <option value="guitar" {% if instrument == 'guitar' %}selected{% endif %}>Guitar</option>
+                <option value="banjo" {% if instrument == 'banjo' %}selected{% endif %}>Banjo</option>
+                <option value="ukulele" {% if instrument == 'ukulele' %}selected{% endif %}>Ukulele</option>
+                <option value="violin" {% if instrument == 'violin' %}selected{% endif %}>Violin</option>
+            </select>
+        </div>
+        <div class="control-group mb-4">
+            <label for="string-dropdown" class="block mb-2">Select String:</label>
+            <select id="string-dropdown" class="w-full border border-gray-300 rounded-md py-2 px-3">
+                {% for string in strings %}
+                    <option value="{{ string.frequency }}">{{ string.name }} - {{ string.frequency }} Hz</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="control-group mb-4">
+            <label class="inline-flex items-center">
+                <input type="checkbox" id="auto-mode-checkbox" class="form-checkbox h-5 w-5 text-blue-600">
+                <span class="ml-2">Automatic Mode</span>
+            </label>
+        </div>
+        <div class="control-group">
+            <button id="start-button" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 mr-2">Start</button>
+            <button id="stop-button" class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700">Stop</button>
+        </div>
     </div>
-    <div id="pitch-slider"></div>
-    <div id="decibel-rating">Decibel Rating: -</div>
-    <select id="instrument-dropdown">
-        <option value="guitar" {% if instrument == 'guitar' %}selected{% endif %}>Guitar</option>
-        <option value="banjo" {% if instrument == 'banjo' %}selected{% endif %}>Banjo</option>
-    </select>
-    <select id="string-dropdown">
-        {% for string in strings %}
-            <option value="{{ string.frequency }}">{{ string.name }} - {{ string.frequency }} Hz</option>
-        {% endfor %}
-    </select>
-    <div>
-        <input type="checkbox" id="auto-mode-checkbox">
-        <label for="auto-mode-checkbox">Automatic Mode</label>
+</section>
+<section class="settings mt-12">
+    <h2 class="text-2xl font-bold mb-4">Tuner Settings</h2>
+    <div class="settings-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="setting">
+            <label for="sensitivity-slider" class="block mb-2">Sensitivity:</label>
+            <input type="range" id="sensitivity-slider" min="1" max="100" value="50" class="w-full">
+        </div>
+        <div class="setting">
+            <label for="tolerance-slider" class="block mb-2">Tolerance:</label>
+            <input type="range" id="tolerance-slider" min="0.1" max="1" step="0.1" value="0.5" class="w-full">
+        </div>
+        <div class="setting">
+            <label for="volume-slider" class="block mb-2">Volume:</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="1" class="w-full">
+        </div>
     </div>
-    <button id="start-button">Start</button>
-    <button id="stop-button">Stop</button>
-</body>
-</html>
+</section>
+<section class="tuning-guide mt-12">
+    <h2 class="text-2xl font-bold mb-4">Tuning Guide</h2>
+    <ol class="list-decimal list-inside">
+        <li>Select your instrument and the string you want to tune.</li>
+        <li>Click the "Start" button to begin listening for the pitch.</li>
+        <li>Play the corresponding string on your instrument.</li>
+        <li>Adjust the tuning peg until the estimated pitch matches the target pitch.</li>
+        <li>Repeat the process for each string until your instrument is fully tuned.</li>
+    </ol>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const startButton = document.getElementById('start-button');
+    const stopButton = document.getElementById('stop-button');
+    const stringDropdown = document.getElementById('string-dropdown');
+    const targetPitchLabel = document.getElementById('target-pitch-label');
+    const estimatedPitchLabel = document.getElementById('estimated-pitch-label');
+    const decibelRating = document.getElementById('decibel-rating');
+
+    let estimationInterval;
+
+    startButton.addEventListener('click', () => {
+        startPitchEstimation();
+    });
+
+    stopButton.addEventListener('click', () => {
+        stopPitchEstimation();
+    });
+
+    function startPitchEstimation() {
+        fetch('/start_estimation')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                estimationInterval = setInterval(updatePitchEstimation, 100);
+            })
+            .catch(error => {
+                console.error('Error starting pitch estimation:', error);
+            });
+    }
+
+    function stopPitchEstimation() {
+        fetch('/stop_estimation')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                clearInterval(estimationInterval);
+            })
+            .catch(error => {
+                console.error('Error stopping pitch estimation:', error);
+            });
+    }
+
+    function updatePitchEstimation() {
+        fetch('/estimate_pitch')
+            .then(response => response.json())
+            .then(data => {
+                const targetPitch = parseFloat(stringDropdown.value);
+                const estimatedPitch = data.estimated_pitch;
+                const decibels = data.decibels;
+
+                targetPitchLabel.textContent = `Target Pitch: ${targetPitch.toFixed(2)} Hz`;
+                estimatedPitchLabel.textContent = `Estimated Pitch: ${estimatedPitch.toFixed(2)} Hz`;
+                decibelRating.textContent = `Decibel Rating: ${decibels.toFixed(2)} dB`;
+
+                // Update the tuner display canvas based on the estimated pitch and target pitch
+                updateTunerDisplay(estimatedPitch, targetPitch);
+            })
+            .catch(error => {
+                console.error('Error updating pitch estimation:', error);
+            });
+    }
+
+    function updateTunerDisplay(estimatedPitch, targetPitch) {
+        const canvas = document.getElementById('tuner-canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Clear the canvas
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw the target pitch line
+        ctx.strokeStyle = 'green';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, height / 2);
+        ctx.lineTo(width, height / 2);
+        ctx.stroke();
+
+        // Draw the estimated pitch line
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, height / 2 - (estimatedPitch - targetPitch) * 10);
+        ctx.lineTo(width, height / 2 - (estimatedPitch - targetPitch) * 10);
+        ctx.stroke();
+    }
+</script>
+{% endblock %}

@@ -1,36 +1,56 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Contact - Guitar Tuner</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <header>
-        <h1>Guitar Tuner</h1>
-        <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/about">About</a></li>
-                <li><a href="/contact">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
-    <div class="contact-content">
-        <h2>Contact Us</h2>
-        <p>
-            If you have any questions, suggestions, or feedback, please feel free to reach out to us using the contact information below:
+{% extends "base.html" %}
+
+{% block title %}Contact - Guitar Tuner{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h2 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">Contact Us</h2>
+        <p class="mt-4 text-lg text-gray-500">
+            If you have any questions, suggestions, or feedback, please feel free to reach out to us using the contact form below or the contact information provided:
         </p>
-        <ul>
+        <ul class="mt-6 list-disc list-inside text-gray-600">
             <li>Email: info@guitartuner.com</li>
             <li>Phone: +1 123-456-7890</li>
             <li>Address: 123 Guitar Street, Musicville, Harmonystate, 12345</li>
         </ul>
-        <p>
+        <div class="mt-12">
+            <form method="POST" class="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                    <div class="mt-1">
+                        <input type="text" id="name" name="name" required class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <div class="mt-1">
+                        <input type="email" id="email" name="email" required class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
+                    <div class="mt-1">
+                        <input type="text" id="subject" name="subject" required class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+                    <div class="mt-1">
+                        <textarea id="message" name="message" rows="5" required class="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"></textarea>
+                    </div>
+                </div>
+                <div class="sm:col-span-2">
+                    <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Send Message
+                    </button>
+                </div>
+            </form>
+        </div>
+        <p class="mt-8 text-lg text-gray-500">
             We appreciate your interest in Guitar Tuner and value your input. Our team is dedicated to providing the best experience for our users. We strive to respond to all inquiries within 24-48 hours.
         </p>
-        <p>
+        <p class="mt-4 text-lg text-gray-500">
             Thank you for using Guitar Tuner!
         </p>
     </div>
-</body>
-</html>
+{% endblock %}

@@ -108,8 +108,25 @@ def stop_estimation():
 def about():
     return render_template('about.html')
 
-@app.route('/contact')
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
+    if request.method == 'POST':
+        # Process the form data
+        name = request.form['name']
+        email = request.form['email']
+        subject = request.form['subject']
+        message = request.form['message']
+        
+        # Perform any necessary actions with the form data (e.g., send an email, store in a database)
+        # For demonstration purposes, let's just print the form data
+        print(f"Name: {name}")
+        print(f"Email: {email}")
+        print(f"Subject: {subject}")
+        print(f"Message: {message}")
+        
+        # Optionally, you can redirect to a thank you page or display a success message
+        return "Thank you for contacting us!"
+    
     return render_template('contact.html')
 
 if __name__ == '__main__':

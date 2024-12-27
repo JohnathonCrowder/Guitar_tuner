@@ -5,6 +5,8 @@ from PyQt5.QtGui import *
 import pyaudio
 import numpy as np
 import crepe
+import wave
+import os
 
 # Audio settings
 SAMPLE_RATE = 16000
@@ -74,7 +76,6 @@ class PitchEstimationThread(QThread):
         p.terminate()
 
 
-
 class PitchSlider(QWidget):
     def __init__(self, target_pitch):
         super().__init__()
@@ -124,6 +125,7 @@ class PitchSlider(QWidget):
         self.is_estimating = is_estimating
         self.update()
 
+
 class PitchEstimationGUI(QWidget):
     def __init__(self):
         super().__init__()
@@ -161,7 +163,6 @@ class PitchEstimationGUI(QWidget):
         # Add the pitch labels widget to the main layout with center alignment
         layout.addWidget(pitch_labels_widget, alignment=Qt.AlignCenter)
 
-
         # Create and add the pitch slider widget
         self.pitch_slider = PitchSlider(0)
         layout.addWidget(self.pitch_slider, alignment=Qt.AlignCenter)
@@ -192,12 +193,30 @@ class PitchEstimationGUI(QWidget):
         # Add the decibel layout to the main layout
         layout.addLayout(decibel_layout)
 
+        # Create a horizontal layout for the instrument dropdown and record button
+        instrument_record_layout = QHBoxLayout()
+
+        # Create and configure the instrument dropdown menu
+        self.instrument_dropdown = QComboBox()
+        self.instrument_dropdown.addItems(['Guitar', 'Banjo', 'Ukulele', 'Violin'])
+        self.instrument_dropdown.currentIndexChanged.connect(self.update_instrument)
+        instrument_record_layout.addWidget(self.instrument_dropdown)
+
+        # Create and configure the record button
+        self.record_button = QPushButton('Record')
+        self.record_button.setStyleSheet("font-size: 18px; padding: 5px;")
+        self.record_button.setCheckable(True)
+        self.record_button.toggled.connect(self.toggle_recording)
+        instrument_record_layout.addWidget(self.record_button)
+
+        # Add the instrument and record layout to the main layout
+        layout.addLayout(instrument_record_layout)
+
         # Create and configure the string dropdown menu
         self.string_dropdown = QComboBox()
         self.string_dropdown.addItems([f"{guitar_string.name} - {guitar_string.frequency:.2f} Hz" for guitar_string in reversed(guitar_strings)])
         self.string_dropdown.currentIndexChanged.connect(self.update_target_pitch)
         layout.addWidget(self.string_dropdown)
-
 
         # Create and configure the start button
         self.start_button = QPushButton('Start')
@@ -248,10 +267,6 @@ class PitchEstimationGUI(QWidget):
         # Add the automatic mode and custom pitch layout to the main layout
         layout.addLayout(auto_custom_layout)
 
-
-
-
-
         # Set the main layout for the GUI
         self.setLayout(layout)
 
@@ -263,6 +278,10 @@ class PitchEstimationGUI(QWidget):
         self.estimation_thread = PitchEstimationThread()
         self.estimation_thread.pitch_estimated.connect(self.update_pitch)
         self.estimation_thread.decibel_calculated.connect(self.update_decibel_rating)
+
+        # Initialize recording variables
+        self.recording = False
+        self.audio_frames = []
 
     def set_pitch_indicator_color(self, color):
         """Set the color of the pitch indicator widget"""
@@ -278,15 +297,35 @@ class PitchEstimationGUI(QWidget):
         y = (self.pitch_slider.height() - self.pitch_indicator.height()) // 2
         self.pitch_indicator.move(x, y)
 
+    def update_instrument(self, index):
+        """Update the instrument based on the selected instrument from the dropdown menu"""
+        instrument = self.instrument_dropdown.currentText()
+        self.load_instrument_strings(instrument)
+
+    def load_instrument_strings(self, instrument):
+        """Load the strings for the selected instrument"""
+        if instrument == 'Guitar':
+            self.instrument_strings = guitar_strings
+        elif instrument == 'Banjo':
+            self.instrument_strings = banjo_strings
+        elif instrument == 'Ukulele':
+            self.instrument_strings = ukulele_strings
+        elif instrument == 'Violin':
+            self.instrument_strings = violin_strings
+
+        self.string_dropdown.clear()
+        self.string_dropdown.addItems([f"{string.name} - {string.frequency:.2f} Hz" for string in reversed(self.instrument_strings)])
+        self.update_target_pitch(0)
+
     def update_target_pitch(self, index):
         """Update the target pitch based on the selected string from the dropdown menu"""
-        self.target_pitch = guitar_strings[len(guitar_strings) - index - 1].frequency
+        self.target_pitch = self.instrument_strings[len(self.instrument_strings) - index - 1].frequency
         self.target_pitch_label.setText(f'Target Pitch: {self.target_pitch:.2f} Hz')
         self.pitch_slider.target_pitch = self.target_pitch
         self.pitch_slider.update()
 
         # Update the string label with the selected string name
-        selected_string = guitar_strings[len(guitar_strings) - index - 1].name
+        selected_string = self.instrument_strings[len(self.instrument_strings) - index - 1].name
         self.string_label.setText(selected_string)
 
     def toggle_custom_pitch(self, state):
@@ -351,11 +390,11 @@ class PitchEstimationGUI(QWidget):
         closest_string = None
         min_difference = float('inf')
 
-        for guitar_string in guitar_strings:
-            difference = abs(estimated_pitch - guitar_string.frequency)
+        for string in self.instrument_strings:
+            difference = abs(estimated_pitch - string.frequency)
             if difference < min_difference:
                 min_difference = difference
-                closest_string = guitar_string
+                closest_string = string
 
         return closest_string
 
@@ -382,9 +421,9 @@ class PitchEstimationGUI(QWidget):
             if self.auto_mode_checkbox.isChecked():
                 closest_string = self.find_closest_string(estimated_pitch)
                 if closest_string:
-                    index = guitar_strings.index(closest_string)
-                    self.string_dropdown.setCurrentIndex(len(guitar_strings) - index - 1)
-                    self.update_target_pitch(len(guitar_strings) - index - 1)
+                    index = self.instrument_strings.index(closest_string)
+                    self.string_dropdown.setCurrentIndex(len(self.instrument_strings) - index - 1)
+                    self.update_target_pitch(len(self.instrument_strings) - index - 1)
 
     def update_decibel_rating(self, decibels):
         """Update the decibel rating label"""
@@ -396,11 +435,32 @@ class PitchEstimationGUI(QWidget):
         else:
             self.pitch_slider.set_estimating_state(False)
 
+    def toggle_recording(self, checked):
+        """Toggle audio recording"""
+        self.recording = checked
+        if self.recording:
+            self.audio_frames = []  # Clear previous recording
+            self.record_button.setText('Stop Recording')
+        else:
+            self.record_button.setText('Record')
+            self.save_recording()
+
+    def save_recording(self):
+        """Save the recorded audio to a WAV file"""
+        if len(self.audio_frames) > 0:
+            wav_file = QFileDialog.getSaveFileName(self, 'Save Recording', '', 'WAV Files (*.wav)')[0]
+            if wav_file:
+                wf = wave.open(wav_file, 'wb')
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(SAMPLE_RATE)
+                wf.writeframes(b''.join(self.audio_frames))
+                wf.close()
+
     def closeEvent(self, event):
         """Handle the window close event"""
         self.stop_estimation()
         event.accept()
-
 
 
 if __name__ == '__main__':
@@ -413,7 +473,30 @@ if __name__ == '__main__':
         GuitarString('E', 329.63)
     ]
 
+    banjo_strings = [
+        GuitarString('D', 294),
+        GuitarString('B', 248),
+        GuitarString('G', 196),
+        GuitarString('D', 147),
+        GuitarString('G', 98)
+    ]
+
+    ukulele_strings = [
+        GuitarString('A', 440),
+        GuitarString('E', 329.63),
+        GuitarString('C', 261.63),
+        GuitarString('G', 392)
+    ]
+
+    violin_strings = [
+        GuitarString('G', 196),
+        GuitarString('D', 293.66),
+        GuitarString('A', 440),
+        GuitarString('E', 659.25)
+    ]
+
     app = QApplication(sys.argv)
     gui = PitchEstimationGUI()
+    gui.load_instrument_strings('Guitar')  # Set the default instrument to Guitar
     gui.show()
     sys.exit(app.exec_())

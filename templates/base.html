@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>{% block title %}Guitar Tuner{% endblock %}</title>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <a class="text-gray-800 text-xl font-bold md:text-2xl hover:text-gray-700" href="{{ url_for('index') }}">Guitar Tuner</a>
+                </div>
+                <div class="flex space-x-4">
+                    <a class="text-gray-800 hover:text-gray-600" href="{{ url_for('about') }}">About</a>
+                    <a class="text-gray-800 hover:text-gray-600" href="{{ url_for('contact') }}">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer class="bg-white shadow">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <span class="text-gray-600">&copy; 2023 Guitar Tuner. All rights reserved.</span>
+            </div>
+            <div class="flex space-x-4">
+                <a class="text-gray-600 hover:text-gray-800" href="#">Privacy Policy</a>
+                <a class="text-gray-600 hover:text-gray-800" href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>
